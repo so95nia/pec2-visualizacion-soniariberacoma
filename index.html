@@ -4,134 +4,201 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PEC 2 — Técnicas de Visualización de Datos | Sònia Ribera Coma</title>
-  <meta name="description" content="PEC 2 — Visualizaciones interactivas (Stacked Bar, Boxplot, Hexbin) con foco en accesibilidad. Autora: Sònia Ribera Coma. UOC — Máster en Ciencia de Datos.">
-  <!-- Favicon SVG inline -->
-  <link rel="icon" href='data:image/svg+xml;utf8,
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-    <rect width="128" height="128" fill="white"/>
-    <text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle"
-          font-family="Arial, Helvetica, sans-serif" font-weight="700"
-          font-size="68" fill="#111827">SR</text>
-  </svg>'>
+  <meta name="description" content="PEC 2 — Tres visualizaciones interactivas (Stacked Bar, Boxplot y Hexbin) con foco en accesibilidad, creadas con Plotly y Bokeh. Autora: Sònia Ribera Coma, UOC.">
+  <meta name="theme-color" content="#1f2937" />
+  <!-- Favicon SVG en línea (monograma SR) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='white'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-family='Inter,Arial' font-size='32' font-weight='700' fill='%23111827'%3ESR%3C/text%3E%3C/svg%3E">
 
   <style>
     :root{
-      --text:#111827; --muted:#374151; --bg:#ffffff; --card:#ffffff; --soft:#f7f8fb;
-      --border:#e5e7eb; --accent:#1f2937; --accent-2:#2563eb; --shadow:0 12px 28px rgba(0,0,0,.06);
-      --maxw: 1050px;
+      --bg:#ffffff; --text:#111827; --muted:#374151; --border:#e5e7eb; --card:#f8fafc;
+      --accent:#1f2937; --accent-2:#2563eb; --maxw:1024px;
     }
-    html{scroll-behavior:smooth}
+    html{scroll-behavior:smooth;}
+    @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
     body{
       margin:0; background:var(--bg); color:var(--text);
-      font: 17px/1.65 Arial, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height:1.65; font-size:18px;
     }
-
-    /* HERO */
-    .hero{
-      background: radial-gradient(1200px 420px at 10% 0%, #eef2ff 0%, #ffffff 60%), 
-                  linear-gradient(180deg, #ffffff 0%, #f7f8fb 100%);
+    /* Hero */
+    header{
+      background: linear-gradient(180deg,#ffffff 0%,#f7f8fb 60%, #eef2ff 100%);
       border-bottom:1px solid var(--border);
     }
-    .wrap{ max-width:var(--maxw); margin:0 auto; padding:2.1rem 1.25rem; }
-    .title{ margin:0; font-weight:800; letter-spacing:.2px; font-size:clamp(1.6rem,3vw,2.1rem); }
-    .sub{
-      margin:.35rem 0 0 0; color:var(--muted);
-      font-size:clamp(.98rem,1.8vw,1.05rem);
-    }
-    .pill{
-      display:inline-block; margin-top:.8rem; padding:.35rem .6rem; font-weight:700;
-      border:1.5px solid var(--border); background:#fff; border-radius:999px; color:#444;
-      font-size:.92rem;
+    .wrap{max-width:var(--maxw); margin:0 auto; padding:1.75rem 1.25rem;}
+    .title{margin:0 0 .35rem 0; font-size:clamp(1.6rem,3.2vw,2.2rem); font-weight:800; color:var(--text); text-align:center;}
+    .subtitle{margin:.25rem 0 1rem 0; text-align:center; color:var(--muted);}
+    .badges{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap;}
+    .badge{
+      background:#fff; border:1.5px solid var(--border); color:var(--text);
+      padding:.35rem .6rem; border-radius:999px; font-size:.92rem; font-weight:600;
     }
 
-    main{ padding:1.25rem; }
-    .container{ max-width:var(--maxw); margin:0 auto; }
-
-    /* TABS + NAV */
+    main{max-width:var(--maxw); margin:0 auto; padding:1.25rem;}
+    p{margin:.5rem 0; text-align:justify;}
+    /* Tabs + controles */
     .tabs{
-      position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:.5rem;
-      background:#fff; border:1.5px solid var(--border); border-radius:14px; padding:.55rem .6rem;
-      box-shadow: var(--shadow); margin:1rem 0 1rem 0;
+      position:sticky; top:0; z-index:20; display:flex; gap:.5rem; align-items:center;
+      background:#fff; padding:.6rem; border:1.5px solid var(--border); border-radius:14px;
+      box-shadow:0 4px 16px rgba(0,0,0,.04); margin:.75rem 0 1rem 0;
     }
     .tabs button[role="tab"]{
-      appearance:none; border:2px solid transparent; background:#f3f4f6; color:#111827;
-      padding:.55rem .9rem; border-radius:12px; font-weight:700; cursor:pointer; transition:.15s;
+      appearance:none; border:2px solid transparent; background:#f3f4f6; color:var(--text);
+      padding:.55rem .9rem; border-radius:12px; font-weight:700; cursor:pointer;
     }
     .tabs button[aria-selected="true"]{ background:var(--accent); color:#fff; }
     .tabs button:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
     .spacer{flex:1}
     .nav-arrows button{
-      border:none; background:var(--accent); color:#fff; font-weight:800; border-radius:10px;
-      padding:.45rem .7rem; cursor:pointer; transition:.18s;
+      border:none; background:var(--accent); color:#fff; font-weight:700; border-radius:10px;
+      padding:.45rem .7rem; cursor:pointer;
     }
-    .nav-arrows button:hover{ background:var(--accent-2); }
     .nav-arrows button:disabled{ background:#9ca3af; cursor:not-allowed; }
 
-    /* TITLE + FRAME */
-    .vis-title{
-      margin:.4rem 0 1rem 0; padding-left:.7rem; border-left:4px solid var(--accent);
-      font-size:clamp(1.12rem,2.2vw,1.35rem);
-    }
+    /* Título + visor */
+    .vis-title{margin:.6rem 0 1rem 0; border-left:4px solid var(--accent); padding-left:.6rem;}
     .card{
-      background:var(--card); border:1.5px solid var(--border); border-radius:16px; box-shadow: var(--shadow);
-      padding:1rem; margin:.25rem 0 1.1rem 0;
+      background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:1rem;
+      box-shadow:0 6px 24px rgba(0,0,0,.05);
     }
     #frame{
-      width:100%; height:68vh; min-height:420px;
-      border:1px solid var(--border); border-radius:12px; background:#fff; box-shadow:0 10px 24px rgba(0,0,0,.05);
+      width:100%; border:1px solid var(--border); border-radius:14px; background:#fff;
+      height:68vh; /* se ajusta también por JS */
     }
     .skeleton{
-      display:none; width:100%; height:68vh; min-height:420px; border-radius:12px; border:1px solid var(--border);
-      background:linear-gradient(90deg,#f4f4f5 25%,#eaeaea 37%,#f4f4f5 63%); background-size:400% 100%;
-      animation:shine 1.2s infinite ease-out;
+      display:none; width:100%; height:68vh; border-radius:14px;
+      background:linear-gradient(90deg,#f4f4f5 25%,#eaeaea 37%,#f4f4f5 63%);
+      background-size:400% 100%; animation:shine 1.2s infinite ease-out;
+      border:1px solid var(--border);
     }
     @keyframes shine{0%{background-position:100% 0}100%{background-position:0 0}}
-    .note{ color:#6b7280; font-size:.95rem; margin:.4rem 0 0 .1rem; }
+    .note{color:#6b7280; font-size:.95rem; margin:.6rem 0 0}
 
     footer{
-      margin-top:1.5rem; padding:1.2rem 0; background:#fff; border-top:1px solid var(--border);
-      color:#6b7280; font-size:.95rem;
+      margin-top:2rem; border-top:1px solid var(--border); padding:1rem 1.25rem; text-align:center; color:#6b7280; font-size:.95rem;
     }
-    footer .wrap{ padding:0 1.25rem; }
   </style>
 </head>
 <body>
-  <!-- HERO -->
-  <header class="hero" role="banner">
+  <header role="banner">
     <div class="wrap">
-      <h1 class="title">PEC 2 — Técnicas de Visualización de Datos</h1>
-      <p class="sub">
-        <strong>Autora:</strong> Sònia Ribera Coma ·
-        <strong>Asignatura:</strong> Visualización de Datos ·
-        <strong>Máster:</strong> Máster Universitario en Ciencia de Datos (UOC) ·
-        <strong>Curso:</strong> 2025–2026
-      </p>
-      <span class="pill">Plotly · Bokeh · Accesibilidad</span>
+      <h1 class="title">PEC 2 · Técnicas de Visualización de Datos</h1>
+      <p class="subtitle">Visualizaciones interactivas con <strong>Plotly</strong> y <strong>Bokeh</strong> sobre el dataset <em>Lifestyle and Wellbeing Data</em> (Kaggle, 2023).</p>
+      <div class="badges" aria-label="Metadatos">
+        <span class="badge">Autora: Sònia Ribera Coma</span>
+        <span class="badge">Asignatura: Visualización de datos</span>
+        <span class="badge">Máster Universitario en Ciencia de Datos (UOC)</span>
+        <span class="badge">Curso 2025–2026</span>
+      </div>
     </div>
   </header>
 
   <main id="contenido" role="main">
-    <div class="container">
-      <section aria-labelledby="intro">
-        <p>Esta práctica presenta tres visualizaciones interactivas creadas con <strong>Plotly</strong> y <strong>Bokeh</strong> a partir del conjunto de datos <em>Lifestyle and Wellbeing Data</em> (Kaggle, 2023). Usa las pestañas o las flechas para navegar. Todas las vistas son accesibles y responsivas.</p>
-      </section>
+    <section aria-labelledby="intro">
+      <p>Usa las <strong>pestañas</strong> o las <strong>flechas</strong> para navegar entre gráficos. También puedes usar el teclado (← →) o deslizar en móvil. Las visualizaciones mantienen un enfoque de accesibilidad: contraste alto, tipografía legible, foco visible y descripciones claras.</p>
+    </section>
 
-      <!-- NAV -->
-      <nav class="tabs" role="tablist" aria-label="Visualizaciones">
-        <button role="tab" id="tab-stacked" aria-controls="panel" aria-selected="true"
-                data-src="stacked_bar.html"
-                data-title="Grupo I — Stacked Bar Graph (Barras Apiladas)">Barras apiladas</button>
-        <button role="tab" id="tab-boxplot" aria-controls="panel" aria-selected="false"
-                data-src="boxplot.html"
-                data-title="Grupo II — Box Plot (Diagrama de Caja)">Box plot</button>
-        <button role="tab" id="tab-hexbin" aria-controls="panel" aria-selected="false"
-                data-src="hexbin_bokeh.html"
-                data-title="Grupo III — Hexbin (Agregación hexagonal)">Hexbin</button>
-        <div class="spacer"></div>
-        <div class="nav-arrows" aria-hidden="false">
-          <button id="prev" aria-label="Anterior">⬅️</button>
-          <button id="next" aria-label="Siguiente">➡️</button>
-        </div>
-      </nav>
+    <nav class="tabs" role="tablist" aria-label="Visualizaciones">
+      <button role="tab" id="tab-stacked" aria-controls="panel" aria-selected="true" data-src="stacked_bar.html" data-title="Grupo I — Stacked Bar Graph (Barras Apiladas)">Barras apiladas</button>
+      <button role="tab" id="tab-boxplot" aria-controls="panel" aria-selected="false" data-src="boxplot.html" data-title="Grupo II — Box Plot (Diagrama de Caja)">Box plot</button>
+      <button role="tab" id="tab-hexbin"  aria-controls="panel" aria-selected="false" data-src="hexbin_bokeh.html" data-title="Grupo III — Hexbin (Agregación hexagonal)">Hexbin</button>
+      <div class="spacer"></div>
+      <div class="nav-arrows" aria-hidden="false">
+        <button id="prev" aria-label="Anterior">⬅️</button>
+        <button id="next" aria-label="Siguiente">➡️</button>
+      </div>
+    </nav>
 
-      <h2 id="chart-title" class="vis-title">Grupo I — Stacked Bar
+    <h2 id="chart-title" class="vis-title">Grupo I — Stacked Bar Graph (Barras Apiladas)</h2>
+
+    <div class="card">
+      <!-- Loader mientras carga el gráfico -->
+      <div id="skeleton" class="skeleton" aria-hidden="true"></div>
+      <!-- Visor -->
+      <iframe id="frame" title="Visualización interactiva" src="stacked_bar.html" loading="lazy"></iframe>
+    </div>
+
+    <p class="note">Sugerencia: con las teclas ← y → cambias de visualización. En móvil, desliza lateralmente.</p>
+  </main>
+
+  <footer role="contentinfo">
+    © 2025 · Sònia Ribera Coma · Visualización de datos — Máster Universitario en Ciencia de Datos (UOC)
+  </footer>
+
+  <script>
+    // Rutas (hash) y orden para historial / flechas
+    const routes = {'#stacked':{tab:'tab-stacked'}, '#boxplot':{tab:'tab-boxplot'}, '#hexbin':{tab:'tab-hexbin'}};
+    const order  = ['#stacked','#boxplot','#hexbin'];
+
+    const tabs   = [...document.querySelectorAll('[role="tab"]')];
+    const frame  = document.getElementById('frame');
+    const title  = document.getElementById('chart-title');
+    const skeleton = document.getElementById('skeleton');
+    const prevBtn  = document.getElementById('prev');
+    const nextBtn  = document.getElementById('next');
+
+    function setActiveByHash(hash, push=true){
+      if(!routes[hash]) hash = '#stacked';
+      const tabId = routes[hash].tab;
+      tabs.forEach(b => b.setAttribute('aria-selected', String(b.id===tabId)));
+      const active = document.getElementById(tabId);
+      title.textContent = active.dataset.title;
+      // loader on
+      skeleton.style.display = 'block';
+      frame.style.visibility = 'hidden';
+      frame.src = active.dataset.src;
+      // historial
+      if(push) history.pushState({hash}, '', hash);
+      updateArrows(hash);
+    }
+    function updateArrows(hash){
+      const idx = order.indexOf(hash);
+      prevBtn.disabled = idx<=0; nextBtn.disabled = idx>=order.length-1;
+    }
+    frame.addEventListener('load', ()=>{ skeleton.style.display='none'; frame.style.visibility='visible'; });
+
+    // Tabs
+    tabs.forEach(b => b.addEventListener('click', () => {
+      const hash = b.id==='tab-stacked' ? '#stacked' : b.id==='tab-boxplot' ? '#boxplot' : '#hexbin';
+      setActiveByHash(hash);
+    }));
+
+    // Teclado
+    window.addEventListener('keydown', e=>{
+      const hash = location.hash || '#stacked';
+      let idx = order.indexOf(hash);
+      if(e.key==='ArrowRight' && idx<order.length-1) setActiveByHash(order[++idx]);
+      if(e.key==='ArrowLeft'  && idx>0)             setActiveByHash(order[--idx]);
+    });
+
+    // Swipe móvil
+    let sx=null;
+    window.addEventListener('touchstart', e=>{ sx = e.changedTouches[0].screenX; });
+    window.addEventListener('touchend',   e=>{
+      if(sx===null) return; const dx = e.changedTouches[0].screenX - sx; sx=null;
+      const hash = location.hash || '#stacked'; let idx = order.indexOf(hash);
+      if(dx<-40 && idx<order.length-1) setActiveByHash(order[++idx]);
+      if(dx> 40 && idx>0)              setActiveByHash(order[--idx]);
+    });
+
+    // Flechas UI
+    prevBtn.addEventListener('click', ()=>{
+      const hash = location.hash || '#stacked'; let i = order.indexOf(hash);
+      if(i>0) setActiveByHash(order[--i]);
+    });
+    nextBtn.addEventListener('click', ()=>{
+      const hash = location.hash || '#stacked'; let i = order.indexOf(hash);
+      if(i<order.length-1) setActiveByHash(order[++i]);
+    });
+
+    // Altura responsive del visor
+    function resizeFrame(){ frame.style.height = Math.max(420, Math.round(window.innerHeight*0.68)) + 'px'; }
+    window.addEventListener('resize', resizeFrame); resizeFrame();
+
+    // Historial (atrás/adelante) + estado inicial
+    window.addEventListener('popstate', ()=> setActiveByHash(location.hash || '#stacked', false));
+    setActiveByHash(location.hash || '#stacked', false);
+  </script>
+</body>
+</html>
