@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PEC 2 — Técnicas de Visualización de Datos | Sònia Ribera Coma</title>
+  <meta name="description" content="PEC 2 — Tres visualizaciones interactivas (Stacked Bar, Boxplot y Hexbin) con foco en accesibilidad, creadas con Plotly y Bokeh. Autora: Sònia Ribera Coma." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --text:#111827;         /* gris muy oscuro */
+      --muted:#374151;        /* gris medio */
+      --bg:#ffffff;
+      --accent:#1f2937;       /* gris antracita (alto contraste) */
+      --accent-fg:#ffffff;
+      --card:#f8fafc;         /* gris muy claro para tarjetas */
+      --border:#e5e7eb;
+      --maxw: 980px;
+    }
+    html{scroll-behavior:smooth;}
+    @media (prefers-reduced-motion: reduce){
+      html{scroll-behavior:auto;}
+      *{animation:none !important; transition:none !important;}
+    }
+    body{
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin:0; color:var(--text); background:var(--bg); line-height:1.65; font-size:18px;
+    }
+    /* Skip link para accesibilidad */
+    .skip-link{
+      position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;
+    }
+    .skip-link:focus{
+      position:fixed; left:1rem; top:1rem; width:auto; height:auto; padding:.5rem .75rem;
+      background:var(--accent); color:var(--accent-fg); border-radius:.5rem; z-index:9999;
+    }
+
+    header{
+      background:linear-gradient(180deg, #ffffff 0%, #f6f7fb 100%);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{
+      max-width:var(--maxw); margin:0 auto; padding:2rem 1.25rem;
+    }
+    .title{
+      text-align:center; margin:0 0 .75rem 0; color:var(--text);
+      font-size:clamp(1.75rem, 3vw, 2.2rem); font-weight:700;
+    }
+    .meta{
+      text-align:center; color:var(--muted); margin:0 auto 1.25rem auto;
+    }
+
+    main{ padding:2rem 1.25rem; }
+    .container{ max-width:var(--maxw); margin:0 auto; }
+
+    h2{
+      color:var(--text);
+      font-size:clamp(1.25rem, 2.2vw, 1.5rem);
+      margin:2rem 0 .5rem 0;
+      border-left:4px solid var(--accent);
+      padding-left:.6rem;
+    }
+    p{ margin:.5rem 0; text-align:justify; }
+    ul{ margin:.5rem 0 1.25rem 1.25rem; }
+    code{ background:#eef2ff; padding:.05rem .25rem; border-radius:.25rem; }
+
+    .card{
+      background:var(--card);
+      border:1.5px solid var(--border);
+      border-radius:14px;
+      padding:1.1rem 1rem;
+      margin:1rem 0;
+    }
+
+    /* Botón accesible */
+    .btn{
+      display:inline-block;
+      padding:.7rem 1.1rem;
+      border:2px solid var(--accent);
+      border-radius:12px;
+      color:var(--accent);
+      font-weight:600;
+      text-decoration:none;
+      line-height:1;
+      transition:background .15s ease, color .15s ease, box-shadow .15s ease;
+    }
+    .btn:hover, .btn:focus{
+      background:var(--accent);
+      color:var(--accent-fg);
+      outline:none;
+      box-shadow:0 0 0 3px rgba(31,41,55,.2);
+    }
+
+    /* Footer pequeño */
+    footer{
+      border-top:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+    footer .wrap{ padding:1.25rem; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header role="banner">
+    <div class="wrap">
+      <h1 class="title">PEC 2 — Técnicas de Visualización de Datos</h1>
+      <p class="meta">
+        <strong>Autora:</strong> Sònia Ribera Coma ·
+        <strong>Asignatura:</strong> Visualización de datos (Máster Ciencia de Datos de la UOC) ·
+        <strong>Curso:</strong> 2025–2026
+      </p>
+    </div>
+  </header>
+
+  <main id="contenido" role="main">
+    <div class="container">
+      <section aria-labelledby="intro">
+        <p>Esta práctica presenta tres visualizaciones interactivas creadas con las librerías <strong>Plotly</strong> y <strong>Bokeh</strong> a partir del conjunto de datos abierto <em>Lifestyle and Wellbeing Data</em> (Kaggle, 2023).</p>
+        <p>El objetivo es analizar distintos aspectos del bienestar y los hábitos cotidianos —como el sueño, el estrés y la actividad física— mediante tres técnicas de visualización diferentes: una básica, una habitual y una menos común.</p>
+        <p>El trabajo pone el foco en la <strong>accesibilidad visual</strong>, buscando que cada gráfico sea comprensible, navegable e inclusivo. Todos los gráficos permiten interacción mediante zoom, movimiento y lectura de datos mediante <em>hover</em>, lo que facilita la exploración del contenido.</p>
+      </section>
+
+      <section class="card" aria-labelledby="g1">
+        <h2 id="g1">Grupo I — Stacked Bar Graph (Barras Apiladas)</h2>
+        <p><strong>Técnica:</strong> Gráfico de barras apiladas (Stacked Bar)<br><strong>Herramienta:</strong> Plotly (Python)</p>
+        <p>Esta visualización muestra la composición del número medio de horas de sueño según los diferentes grupos de edad. Permite comparar los totales y, además, la distribución interna de categorías, ofreciendo una lectura clara sobre cómo varían los hábitos de descanso en función de la edad. Se ha optado por colores bien contrastados, etiquetas internas legibles y estructura accesible con descripción alternativa y texto de apoyo.</p>
+        <p><a class="btn" href="stacked_bar.html" target="_blank" rel="noopener" aria-label="Abrir visualización interactiva del Grupo I, Barras apiladas">Ver visualización interactiva</a></p>
+      </section>
+
+      <section class="card" aria-labelledby="g2">
+        <h2 id="g2">Grupo II — Box Plot (Diagrama de caja)</h2>
+        <p><strong>Técnica:</strong> Box Plot (Diagrama de Caja)<br><strong>Herramienta:</strong> Plotly (Python)</p>
+        <p>El boxplot representa la distribución del nivel de estrés en función de la frecuencia de ejercicio físico semanal. Esta técnica permite identificar valores atípicos y observar el rango de variabilidad de forma intuitiva. Es muy útil para comunicar la dispersión y los patrones de concentración de datos en contextos comparativos. Los colores y la tipografía están seleccionados para ofrecer una experiencia accesible, con contraste suficiente y texto descriptivo adicional que explica el propósito del gráfico.</p>
+        <p><a class="btn" href="boxplot.html" target="_blank" rel="noopener" aria-label="Abrir visualización interactiva del Grupo II, Box plot">Ver visualización interactiva</a></p>
+      </section>
+
+      <section class="card" aria-labelledby="g3">
+        <h2 id="g3">Grupo III — Hexbin Plot (Agregación hexagonal)</h2>
+        <p><strong>Técnica:</strong> Hexbin (gráfico de densidad por celdas hexagonales)<br><strong>Herramienta:</strong> Bokeh (Python)</p>
+        <p>Esta visualización explora la relación entre las horas de sueño y el nivel de estrés diario, mostrando cómo ambos factores se distribuyen de manera conjunta. Cada hexágono representa un grupo de respuestas cercanas, y el color indica la densidad de observaciones: cuanto más oscuro el tono, mayor número de personas en ese rango. El gráfico es interactivo: permite acercar, desplazar y consultar el número de respuestas mediante <em>hover</em>. Esta técnica es idónea cuando los puntos se solapan, ya que ofrece una lectura más limpia que un diagrama de dispersión tradicional.</p>
+        <p><a class="btn" href="hexbin_bokeh.html" target="_blank" rel="noopener" aria-label="Abrir visualización interactiva del Grupo III, Hexbin">Ver visualización interactiva</a></p>
+      </section>
+
+      <section aria-labelledby="acc">
+        <h2 id="acc">Sobre la accesibilidad y la narrativa visual</h2>
+        <p>El conjunto de visualizaciones se ha diseñado con una atención especial a la accesibilidad cognitiva y visual:</p>
+        <ul>
+          <li>Contraste alto entre colores de fondo y elementos gráficos.</li>
+          <li>Tipografía legible y de gran tamaño.</li>
+          <li>Descripciones textuales integradas en el código HTML mediante etiquetas <code>&lt;figcaption&gt;</code> y <code>aria-label</code>.</li>
+          <li>Uso de herramientas interactivas que permiten exploración visual sin sobrecarga cognitiva.</li>
+        </ul>
+        <p>La narrativa sigue un hilo común centrado en el bienestar personal y el estilo de vida, utilizando el mismo dataset para garantizar coherencia temática entre las tres representaciones.</p>
+      </section>
+
+      <section aria-labelledby="conclu">
+        <h2 id="conclu">Conclusión</h2>
+        <p>Esta práctica ha permitido explorar el potencial de distintas técnicas de visualización de datos y reflexionar sobre su impacto en la comprensión de la información. Mientras que el gráfico de barras apiladas ofrece una visión comparativa, el boxplot facilita la detección de variabilidad y el hexbin introduce una lectura más compleja y profunda sobre correlaciones.</p>
+        <p>El uso combinado de <strong>Plotly</strong> y <strong>Bokeh</strong> demuestra que la accesibilidad y la estética no son excluyentes, sino complementarias cuando se busca una comunicación visual significativa, inclusiva y rigurosa.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer role="contentinfo">
+    <div class="wrap">
+      <span>PEC 2 — Técnicas de Visualización de Datos · Sònia Ribera Coma</span>
+    </div>
+  </footer>
+</body>
+</html>
